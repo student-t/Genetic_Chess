@@ -2,7 +2,7 @@
 #define BOARD_H
 
 #include <vector>
-#include <unordered_map>
+#include <map>
 #include <string>
 #include <array>
 #include <mutex>
@@ -102,7 +102,7 @@ class Board
 
     private:
         std::array<const Piece*, 64> board;
-        std::unordered_map<uint64_t, int> repeat_count;
+        std::map<uint64_t, int> repeat_count;
         Color turn_color;
         std::vector<const Move*> game_record;
         std::array<bool, 64> unmoved_positions;
@@ -156,7 +156,7 @@ class Board
         // Hash values for squares
         static std::mutex hash_lock;
         static bool hash_values_initialized;
-        static std::array<std::unordered_map<const Piece*, uint64_t>, 64> square_hash_values; // [board_index][moved?][piece_hash]
+        static std::array<std::map<const Piece*, uint64_t>, 64> square_hash_values; // [board_index][moved?][piece_hash]
         static std::array<uint64_t, 64> en_passant_hash_values;
         static std::array<uint64_t, 64> castling_hash_values;
 
