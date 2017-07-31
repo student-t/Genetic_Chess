@@ -2,7 +2,7 @@
 #define BOARD_H
 
 #include <vector>
-#include <map>
+#include <unordered_map>
 #include <string>
 #include <array>
 #include <mutex>
@@ -102,7 +102,7 @@ class Board
 
     private:
         std::array<const Piece*, 64> board;
-        std::map<uint64_t, int> repeat_count;
+        std::unordered_map<uint64_t, int> repeat_count;
         Color turn_color;
         std::vector<const Move*> game_record;
         std::array<bool, 64> unmoved_positions;
@@ -156,7 +156,7 @@ class Board
         // Hash values for squares
         static std::mutex hash_lock;
         static bool hash_values_initialized;
-        static std::array<std::map<const Piece*, uint64_t>, 64> square_hash_values; // [board_index][moved?][piece_hash]
+        static std::array<std::unordered_map<const Piece*, uint64_t>, 64> square_hash_values; // [board_index][moved?][piece_hash]
         static std::array<uint64_t, 64> en_passant_hash_values;
         static std::array<uint64_t, 64> castling_hash_values;
 
@@ -169,6 +169,10 @@ class Board
         uint64_t get_color_hash(Color color) const;
         void update_board_hash(Color color);
 
+        // Minimal copy of board with custom constructor for
+        // use with king_is_in_check
+        Board(const Board* old_board);
+        Board minimal_copy() const; // Just copy board state with no history
 
         // Moves with side effects are friends of Board
         friend void Kingside_Castle::side_effects(Board&) const; // moves second piece
