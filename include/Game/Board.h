@@ -104,7 +104,19 @@ class Board
         static const King* get_king(Color color);
 
     private:
-        std::array<const Piece*, 64> board;
+        uint64_t white_pawn_positions;
+        uint64_t black_pawn_positions;
+        uint64_t white_rook_positions;
+        uint64_t black_rook_positions;
+        uint64_t white_knight_positions;
+        uint64_t black_knight_positions;
+        uint64_t white_bishop_positions;
+        uint64_t black_bishop_positions;
+        uint64_t white_queen_positions;
+        uint64_t black_queen_positions;
+        uint64_t white_king_positions;
+        uint64_t black_king_positions;
+
         std::map<uint64_t, int> repeat_count;
         Color turn_color;
         std::vector<const Move*> game_record;
