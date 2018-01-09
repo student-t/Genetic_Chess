@@ -791,6 +791,7 @@ void Board::ascii_draw(Color perspective) const
 
 void Board::remove_piece(char file, int rank)
 {
+    unmoved_positions[Board::board_index(file, rank)] = false;
     auto position = board_bit(file, rank);
 
     if(white_pawn_positions & position)
