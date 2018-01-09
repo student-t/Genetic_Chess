@@ -80,6 +80,7 @@ class Board
         static bool inside_board(int rank);
 
         static size_t board_index(char file, int rank);
+        static uint64_t board_bit(char file, int rank);
 
         const Piece* piece_on_square(char file, int rank) const;
 
@@ -154,7 +155,6 @@ class Board
         // Communication channels
         mutable Thinking_Output_Type thinking_indicator;
 
-        const Piece*& piece_on_square(char file, int rank);
         void remove_piece(char file, int rank);
         void make_move(char file_start, int rank_start, char file_end, int rank_end);
         bool no_legal_moves() const;

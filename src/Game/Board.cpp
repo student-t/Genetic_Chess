@@ -85,7 +85,18 @@ std::array<uint64_t, 2> Board::color_hash_values{}; // for whose_turn() hashing
 
 
 Board::Board() :
-    board{},
+    white_pawn_positions(0),
+    black_pawn_positions(0),
+    white_rook_positions(0),
+    black_rook_positions(0),
+    white_knight_positions(0),
+    black_knight_positions(0),
+    white_bishop_positions(0),
+    black_bishop_positions(0),
+    white_queen_positions(0),
+    black_queen_positions(0),
+    white_king_positions(0),
+    black_king_positions(0),
     turn_color(WHITE),
     unmoved_positions{},
     en_passant_target({'\0', 0}),
@@ -113,6 +124,9 @@ Board::Board() :
         unmoved_positions[Board::board_index('a', base_rank)] = true; // Rook
         unmoved_positions[Board::board_index('e', base_rank)] = true; // King
         unmoved_positions[Board::board_index('h', base_rank)] = true; // Rook
+        update_board_hash('a', base_rank);
+        update_board_hash('e', base_rank);
+        update_board_hash('h', base_rank);
 
         auto pawn_rank = (base_rank == 1 ? 2 : 7);
         for(char file = 'a'; file <= 'h'; ++file)
@@ -129,7 +143,18 @@ Board::Board() :
 }
 
 Board::Board(const std::string& fen) :
-    board{},
+    white_pawn_positions(0),
+    black_pawn_positions(0),
+    white_rook_positions(0),
+    black_rook_positions(0),
+    white_knight_positions(0),
+    black_knight_positions(0),
+    white_bishop_positions(0),
+    black_bishop_positions(0),
+    white_queen_positions(0),
+    black_queen_positions(0),
+    white_king_positions(0),
+    black_king_positions(0),
     turn_color(WHITE),
     unmoved_positions{},
     en_passant_target({'\0', 0}),
@@ -222,21 +247,29 @@ Board::Board(const std::string& fen) :
     {
         unmoved_positions[Board::board_index('h', 1)] = true;
         unmoved_positions[Board::board_index('e', 1)] = true;
+        update_board_hash('h', 1);
+        update_board_hash('e', 1);
     }
     if(String::contains(castling_parse, 'Q'))
     {
         unmoved_positions[Board::board_index('a', 1)] = true;
         unmoved_positions[Board::board_index('e', 1)] = true;
+        update_board_hash('a', 1);
+        update_board_hash('e', 1);
     }
     if(String::contains(castling_parse, 'k'))
     {
         unmoved_positions[Board::board_index('h', 8)] = true;
         unmoved_positions[Board::board_index('e', 8)] = true;
+        update_board_hash('h', 8);
+        update_board_hash('e', 8);
     }
     if(String::contains(castling_parse, 'q'))
     {
         unmoved_positions[Board::board_index('a', 8)] = true;
         unmoved_positions[Board::board_index('e', 8)] = true;
+        update_board_hash('a', 8);
+        update_board_hash('e', 8);
     }
 
     auto en_passant_parse = fen_parse.at(3);
@@ -269,14 +302,76 @@ size_t Board::board_index(char file, int rank)
     return (file - 'a') + 8*(rank - 1);
 }
 
-const Piece*& Board::piece_on_square(char file, int rank)
+uint64_t Board::board_bit(char file, int rank)
 {
-    return board[board_index(file, rank)];
+    return uint64_t(1) << board_index(file, rank);
 }
 
 const Piece* Board::piece_on_square(char file, int rank) const
 {
-    return board[board_index(file, rank)];
+    auto position = board_bit(file, rank);
+
+    if(white_pawn_positions & position)
+    {
+        return get_pawn(WHITE);
+    }
+
+    if(black_pawn_positions & position)
+    {
+        return get_pawn(BLACK);
+    }
+
+    if(white_rook_positions & position)
+    {
+        return get_rook(WHITE);
+    }
+
+    if(black_rook_positions & position)
+    {
+        return get_rook(BLACK);
+    }
+
+    if(white_knight_positions & position)
+    {
+        return get_knight(WHITE);
+    }
+
+    if(black_knight_positions & position)
+    {
+        return get_knight(BLACK);
+    }
+
+    if(white_bishop_positions & position)
+    {
+        return get_bishop(WHITE);
+    }
+
+    if(black_bishop_positions & position)
+    {
+        return get_bishop(BLACK);
+    }
+
+    if(white_queen_positions & position)
+    {
+        return get_queen(WHITE);
+    }
+
+    if(black_queen_positions & position)
+    {
+        return get_queen(BLACK);
+    }
+
+    if(white_king_positions & position)
+    {
+        return get_king(WHITE);
+    }
+
+    if(black_king_positions & position)
+    {
+        return get_king(BLACK);
+    }
+
+    return nullptr;
 }
 
 bool Board::inside_board(char file, int rank)
@@ -700,14 +795,139 @@ void Board::ascii_draw(Color perspective) const
 
 void Board::remove_piece(char file, int rank)
 {
-    place_piece(nullptr, file, rank);
+    auto position = board_bit(file, rank);
+
+    if(white_pawn_positions & position)
+    {
+        white_pawn_positions &= ~position;
+        return;
+    }
+
+    if(black_pawn_positions & position)
+    {
+        black_pawn_positions &= ~position;
+        return;
+    }
+
+    if(white_rook_positions & position)
+    {
+        white_rook_positions &= ~position;
+        return;
+    }
+
+    if(black_rook_positions & position)
+    {
+        black_rook_positions &= ~position;
+        return;
+    }
+
+    if(white_knight_positions & position)
+    {
+        white_knight_positions &= ~position;
+        return;
+    }
+
+    if(black_knight_positions & position)
+    {
+        black_knight_positions &= ~position;
+        return;
+    }
+
+    if(white_bishop_positions & position)
+    {
+        white_bishop_positions &= ~position;
+        return;
+    }
+
+    if(black_bishop_positions & position)
+    {
+        black_bishop_positions &= ~position;
+        return;
+    }
+
+    if(white_queen_positions & position)
+    {
+        white_queen_positions &= ~position;
+        return;
+    }
+
+    if(black_queen_positions & position)
+    {
+        black_queen_positions &= ~position;
+        return;
+    }
+
+    if(white_king_positions & position)
+    {
+        white_king_positions &= ~position;
+        return;
+    }
+
+    if(black_king_positions & position)
+    {
+        black_king_positions &= ~position;
+        return;
+    }
 }
 
 void Board::place_piece(const Piece* piece, char file, int rank)
 {
     update_board_hash(file, rank); // XOR out piece on square
 
-    piece_on_square(file, rank) = piece;
+    remove_piece(file, rank);
+    auto position = board_bit(file, rank);
+
+    switch(piece->fen_symbol())
+    {
+    case 'P':
+        white_pawn_positions |= position;
+        break;
+
+    case 'p':
+        black_pawn_positions |= position;
+        break;
+
+    case 'R':
+        white_rook_positions |= position;
+        break;
+
+    case 'r':
+        black_rook_positions |= position;
+        break;
+
+    case 'N':
+        white_knight_positions |= position;
+        break;
+
+    case 'n':
+        black_knight_positions |= position;
+        break;
+
+    case 'B':
+        white_bishop_positions |= position;
+        break;
+
+    case 'b':
+        black_bishop_positions |= position;
+        break;
+
+    case 'Q':
+        white_queen_positions |= position;
+        break;
+
+    case 'q':
+        black_queen_positions |= position;
+        break;
+
+    case 'K':
+        white_king_positions |= position;
+        break;
+
+    case 'k':
+        black_king_positions |= position;
+        break;
+    }
+
     unmoved_positions[Board::board_index(file, rank)] = false;
 
     update_board_hash(file, rank); // XOR in new piece on square
