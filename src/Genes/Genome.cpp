@@ -13,6 +13,7 @@
 #include "Genes/Total_Force_Gene.h"
 #include "Genes/Freedom_To_Move_Gene.h"
 #include "Genes/Pawn_Advancement_Gene.h"
+#include "Genes/Passed_Pawn_Gene.h"
 #include "Genes/Opponent_Pieces_Targeted_Gene.h"
 #include "Genes/Sphere_of_Influence_Gene.h"
 #include "Genes/Look_Ahead_Gene.h"
@@ -38,6 +39,7 @@ Genome::Genome()
     genome.emplace_back(std::make_unique<Total_Force_Gene>(psg));
     genome.emplace_back(std::make_unique<Freedom_To_Move_Gene>());
     genome.emplace_back(std::make_unique<Pawn_Advancement_Gene>());
+    genome.emplace_back(std::make_unique<Passed_Pawn_Gene>());
     genome.emplace_back(std::make_unique<Opponent_Pieces_Targeted_Gene>(psg));
     genome.emplace_back(std::make_unique<Sphere_of_Influence_Gene>());
     genome.emplace_back(std::make_unique<King_Confinement_Gene>());
@@ -205,7 +207,7 @@ double Genome::time_to_examine(const Board& board, const Clock& clock) const
     return static_cast<const Look_Ahead_Gene*>(genome[look_ahead_gene_index].get())->time_to_examine(board, clock);
 }
 
-bool Genome::enough_time_to_recurse(double time_allotted, const Board& board, double positions_per_second) const
+double Genome::speculation_time_factor(const Board & board) const
 {
-    return static_cast<Look_Ahead_Gene*>(genome[look_ahead_gene_index].get())->enough_time_to_recurse(time_allotted, board, positions_per_second);
+    return static_cast<const Look_Ahead_Gene*>(genome[look_ahead_gene_index].get())->speculation_time_factor(board);
 }

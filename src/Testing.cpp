@@ -21,6 +21,7 @@
 #include "Genes/King_Protection_Gene.h"
 #include "Genes/Opponent_Pieces_Targeted_Gene.h"
 #include "Genes/Pawn_Advancement_Gene.h"
+#include "Genes/Passed_Pawn_Gene.h"
 #include "Genes/Piece_Strength_Gene.h"
 #include "Genes/Sphere_of_Influence_Gene.h"
 #include "Genes/Total_Force_Gene.h"
@@ -538,8 +539,17 @@ void run_tests()
 
     auto pawn_advancement_gene = Pawn_Advancement_Gene();
     auto pawn_advancement_board = Board("7k/4P3/3P4/2P5/1P6/P7/8/K7 w - - 0 1");
-    auto pawn_advancement_score = double(1 + 2 + 3 + 4 + 5)/(8*6);
-    pawn_advancement_gene.test(pawn_advancement_board, pawn_advancement_score);
+    auto pawn_advancement_score = double(1 + 2 + 3 + 4 + 5)/(8*5);
+    tests_passed &= pawn_advancement_gene.test(pawn_advancement_board, pawn_advancement_score);
+
+    auto passed_pawn_gene = Passed_Pawn_Gene();
+    auto passed_pawn_board = Board("k1K5/8/8/3pP3/3P5/8/8/8 w - - 0 1");
+    auto passed_pawn_score = 1.0/8;
+    tests_passed &= passed_pawn_gene.test(passed_pawn_board, passed_pawn_score);
+
+    passed_pawn_board.submit_move(passed_pawn_board.get_move("Kd8"));
+    passed_pawn_score = 0;
+    tests_passed &= passed_pawn_gene.test(passed_pawn_board, passed_pawn_score);
 
     auto sphere_of_influence_gene = Sphere_of_Influence_Gene();
     sphere_of_influence_gene.read_from(test_genes_file_name);
@@ -800,56 +810,6 @@ void run_tests()
         tests_passed = false;
     }
 
-    // Count game tree leaves (perft) to given depth to validate move generation
-    // (downloaded from http://www.rocechess.ch/perft.html)
-    // (leaves from starting positions also found at https://oeis.org/A048987)
-    size_t max_perft_depth = 6;
-    auto perft_suite_input = std::ifstream("perftsuite.epd");
-    std::string line;
-    auto line_count = 0;
-    while(std::getline(perft_suite_input, line))
-    {
-        ++line_count;
-    }
-    perft_suite_input.clear();
-    perft_suite_input.seekg(0, std::ios::beg);
-
-    auto test_number = 0;
-    auto perft_suite_output_file_name = "";
-    while(std::getline(perft_suite_input, line))
-    {
-        auto split_line = String::split(line, " ;");
-        auto fen = split_line.front();
-        std::cout << std::endl << '[' << ++test_number << '/' << line_count << "] " << fen << std::endl;
-        auto board = Board(fen);
-        auto tests = std::vector<std::string>(split_line.begin() + 1, split_line.end());
-        for(const auto& test : tests)
-        {
-            auto depth_leaves = String::split(test);
-            assert(depth_leaves.size() == 2);
-            assert(depth_leaves.front().front() == 'D');
-            auto depth = std::stoi(depth_leaves.front().substr(1));
-            auto prefix = "Depth " + std::to_string(depth) + ": ";
-            if(depth > max_perft_depth)
-            {
-                std::cout << prefix << "skipped" << std::endl;
-                continue;
-            }
-            auto expected_leaves = std::stoul(depth_leaves.back());
-            auto leaf_count = move_count(board, depth, prefix, perft_suite_output_file_name);
-            if(leaf_count != expected_leaves)
-            {
-                std::cerr << " Expected: " << expected_leaves << ", Got: " << leaf_count << std::endl;
-                tests_passed = false;
-                break;
-            }
-            else
-            {
-                std::cout << " OK!" << std::endl;
-            }
-        }
-    }
-
     // check square colors are correct
     auto current_color = WHITE;
     for(char file = 'a'; file <= 'h'; ++file)
@@ -912,6 +872,58 @@ void run_tests()
         std::cerr << "Capture should be possible here." << std::endl;
         tests_passed = false;
     }
+
+
+// Count game tree leaves (perft) to given depth to validate move generation
+    // (downloaded from http://www.rocechess.ch/perft.html)
+    // (leaves from starting positions also found at https://oeis.org/A048987)
+    size_t max_perft_depth = 6;
+    auto perft_suite_input = std::ifstream("perftsuite.epd");
+    std::string line;
+    auto line_count = 0;
+    while(std::getline(perft_suite_input, line))
+    {
+        ++line_count;
+    }
+    perft_suite_input.clear();
+    perft_suite_input.seekg(0, std::ios::beg);
+
+    auto test_number = 0;
+    auto perft_suite_output_file_name = "";
+    while(std::getline(perft_suite_input, line))
+    {
+        auto split_line = String::split(line, " ;");
+        auto fen = split_line.front();
+        std::cout << std::endl << '[' << ++test_number << '/' << line_count << "] " << fen << std::endl;
+        auto board = Board(fen);
+        auto tests = std::vector<std::string>(split_line.begin() + 1, split_line.end());
+        for(const auto& test : tests)
+        {
+            auto depth_leaves = String::split(test);
+            assert(depth_leaves.size() == 2);
+            assert(depth_leaves.front().front() == 'D');
+            auto depth = std::stoi(depth_leaves.front().substr(1));
+            auto prefix = "Depth " + std::to_string(depth) + ": ";
+            if(depth > max_perft_depth)
+            {
+                std::cout << prefix << "skipped" << std::endl;
+                continue;
+            }
+            auto expected_leaves = std::stoul(depth_leaves.back());
+            auto leaf_count = move_count(board, depth, prefix, perft_suite_output_file_name);
+            if(leaf_count != expected_leaves)
+            {
+                std::cerr << " Expected: " << expected_leaves << ", Got: " << leaf_count << std::endl;
+                tests_passed = false;
+                break;
+            }
+            else
+            {
+                std::cout << " OK!" << std::endl;
+            }
+        }
+    }
+
 
     if(tests_passed)
     {
