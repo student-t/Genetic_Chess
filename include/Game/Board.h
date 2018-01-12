@@ -107,18 +107,12 @@ class Board
         static const King* get_king(Color color);
 
     private:
-        uint64_t white_pawn_positions;
-        uint64_t black_pawn_positions;
-        uint64_t white_rook_positions;
-        uint64_t black_rook_positions;
-        uint64_t white_knight_positions;
-        uint64_t black_knight_positions;
-        uint64_t white_bishop_positions;
-        uint64_t black_bishop_positions;
-        uint64_t white_queen_positions;
-        uint64_t black_queen_positions;
-        uint64_t white_king_positions;
-        uint64_t black_king_positions;
+        std::array<uint64_t, 2> pawn_positions;
+        std::array<uint64_t, 2> rook_positions;
+        std::array<uint64_t, 2> knight_positions;
+        std::array<uint64_t, 2> bishop_positions;
+        std::array<uint64_t, 2> queen_positions;
+        std::array<uint64_t, 2> king_positions;
 
         std::map<uint64_t, int> repeat_count;
         Color turn_color;
