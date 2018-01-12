@@ -85,12 +85,12 @@ std::array<uint64_t, 2> Board::color_hash_values{}; // for whose_turn() hashing
 
 
 Board::Board() :
-    pawn_positions{(0, 0)},
-    rook_positions{(0, 0)},
-    knight_positions{(0, 0)},
-    bishop_positions{(0, 0)},
-    queen_positions{(0, 0)},
-    king_positions{(0, 0)},
+    pawn_positions{},
+    rook_positions{},
+    knight_positions{},
+    bishop_positions{},
+    queen_positions{},
+    king_positions{},
     turn_color(WHITE),
     unmoved_positions{},
     en_passant_target({'\0', 0}),
@@ -135,12 +135,12 @@ Board::Board() :
 }
 
 Board::Board(const std::string& fen) :
-    pawn_positions{(0, 0)},
-    rook_positions{(0, 0)},
-    knight_positions{(0, 0)},
-    bishop_positions{(0, 0)},
-    queen_positions{(0, 0)},
-    king_positions{(0, 0)},
+    pawn_positions{},
+    rook_positions{},
+    knight_positions{},
+    bishop_positions{},
+    queen_positions{},
+    king_positions{},
     turn_color(WHITE),
     unmoved_positions{},
     en_passant_target({'\0', 0}),
