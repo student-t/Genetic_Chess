@@ -157,6 +157,7 @@ class Board
         void place_piece(const Piece* piece, char file, int rank);
         void switch_turn();
         void set_unmoved(char file, int rank);
+        static Square square_from_index(size_t index);
 
         // Zobrist hashing
         uint64_t board_hash;

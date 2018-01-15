@@ -46,6 +46,8 @@ const Queen  Board::black_queen(BLACK);
 const King   Board::black_king(BLACK);
 const Pawn   Board::black_pawn(BLACK);
 
+const auto all_piece_types = {PAWN, ROOK, KNIGHT, BISHOP, QUEEN, KING};
+
 const Piece* Board::get_piece(Piece_Type type, Color color)
 {
     switch(type)
@@ -92,6 +94,18 @@ Board::Board() :
     capturing_move_available(false),
     thinking_indicator(NO_THINKING)
 {
+    #ifdef DEBUG
+    for(char file = 'a'; file <= 'h'; ++file)
+    {
+        for(int rank = 1; rank <= 8; ++rank)
+        {
+            auto index = board_index(file, rank);
+            auto square = square_from_index(index);
+            assert(square.file == file && square.rank == rank);
+        }
+    }
+    #endif // DEBUG
+
     initialize_board_hash();
 
     for(auto color : {WHITE, BLACK})
@@ -275,6 +289,11 @@ uint64_t Board::board_bit(char file, int rank)
     return uint64_t(1) << board_index(file, rank);
 }
 
+Square Board::square_from_index(size_t index)
+{
+    return {'a' + (index % 8), 1 + (index/8)};
+}
+
 void Board::generate_square_color_bits()
 {
     for(char file = 'a'; file <= 'h'; ++file)
@@ -295,7 +314,7 @@ const Piece* Board::piece_on_square(char file, int rank) const
 
     for(auto color : {WHITE, BLACK})
     {
-        for(auto type : {PAWN, ROOK, KNIGHT, BISHOP, QUEEN, KING})
+        for(auto type : all_piece_types)
         {
             if(piece_positions[type][color] & position)
             {
@@ -1551,14 +1570,17 @@ void Board::recreate_move_caches()
 
     capturing_move_available = false;
     bool en_passant_legal = false;
-    for(char file = 'a'; file <= 'h'; ++file)
+
+    for(auto type : all_piece_types)
     {
-        for(int rank = 1; rank <= 8; ++rank)
+        auto piece = get_piece(type, whose_turn());
+        auto locations = piece_positions[type][whose_turn()];
+        for(size_t bit_index = 0; locations && bit_index < 64; locations >>= 1, ++bit_index)
         {
-            auto piece = piece_on_square(file, rank);
-            if(piece && piece->color() == whose_turn())
+            if(locations & 1)
             {
-                for(const auto& move : piece->get_move_list(file, rank))
+                auto square = square_from_index(bit_index);
+                for(const auto& move : piece->get_move_list(square.file, square.rank))
                 {
                     if(move->is_legal(*this))
                     {
