@@ -1591,85 +1591,61 @@ void Board::recreate_move_caches()
 
 bool Board::enough_material_to_checkmate() const
 {
-    #ifdef DEBUG
-        auto is_false = [](bool x){ return x == false; };
-    #endif // DEBUG
-
-    std::array<bool, 2> knight_found{};
-    assert(std::all_of(knight_found.begin(), knight_found.end(), is_false));
-
-    std::array<std::array<bool, 2>, 2> bishop_found{}; // bishop_found[Piece color][Square color]
-    assert(std::all_of(bishop_found.begin(), bishop_found.end(),
-                       [is_false](auto x){ return std::all_of(x.begin(), x.end(), is_false);}));
-
-    for(char file = 'a'; file <= 'h'; ++file)
+    for(auto color : {BLACK, WHITE})
     {
-        for(int rank = 1; rank <= 8; ++rank)
+        // any one is enough to checkmate (with pawn prmotion
+        for(auto type : {QUEEN, ROOK, PAWN})
         {
-            auto piece = piece_on_square(file, rank);
-            if( ! piece || piece->is_king())
+            if(piece_positions[type][color])
             {
-                continue;
+                return true;
             }
-            else if(piece->is_queen() || piece->is_rook() || piece->is_pawn())
-            {
-                return true; // checkmate possible with just queen or rook; pawn can promote
-            }
-            else if(piece->is_knight())
-            {
-                if(knight_found[piece->color()])
-                {
-                    return true; // checkmate with two knights possible
-                }
-                else if(bishop_found[piece->color()][WHITE] || bishop_found[piece->color()][BLACK])
-                {
-                    return true; // checkmate with knight and bishop possible
-                }
-                knight_found[piece->color()] = true;
-            }
-            else if(piece->is_bishop())
-            {
-                if(knight_found[piece->color()])
-                {
-                    return true; // knight and bishop checkmate possible
-                }
+        }
 
-                auto bishop_square_color = square_color(file, rank);
-                if(bishop_found[piece->color()][opposite(bishop_square_color)])
-                {
-                    return true; // checkmate with opposite colored bishops possible
-                }
-                bishop_found[piece->color()][bishop_square_color] = true;
-            }
+        // checkmate possible with knight and bishop + king
+        if(piece_positions[BISHOP][color] && piece_positions[KNIGHT][color])
+        {
+            return true;
+        }
 
-            // Checkmates when minor pieces block own king
-            // KB......
-            // ........ White king checkmated in corner
-            // kn......
-            // ........
-            // ........
-            // ........
-            // ........
-            // ........
-            bool white_has_minor_pieces = (knight_found[WHITE] || bishop_found[WHITE][WHITE] || bishop_found[WHITE][BLACK]);
-            bool black_has_minor_pieces = (knight_found[BLACK] || bishop_found[BLACK][WHITE] || bishop_found[BLACK][BLACK]);
-            if(white_has_minor_pieces && black_has_minor_pieces)
+        // Two knights are enough to checkmate
+        auto knights = piece_positions[KNIGHT][color];
+        while(knights)
+        {
+            if((knights & 1) && (knights >> 1))
             {
-                if(knight_found[WHITE] || knight_found[BLACK])
-                {
-                    return true;
-                }
-
-                if(bishop_found[WHITE][WHITE] && bishop_found[BLACK][BLACK])
-                {
-                    return true;
-                }
-
-                if(bishop_found[WHITE][BLACK] && bishop_found[BLACK][WHITE])
-                {
-                    return true;
-                }
+                return true;
             }
+            knights >>= 1;
+        }
+
+        // checkmate possible with oppositely colored bishops
+        if((piece_positions[BISHOP][color] & square_color_bits[WHITE]) &&
+           (piece_positions[BISHOP][color] & square_color_bits[BLACK]))
+        {
+            return true;
+        }
+    }
+
+    auto white_minor_pieces = piece_positions[KNIGHT][WHITE] | piece_positions[BISHOP][WHITE];
+    auto black_minor_pieces = piece_positions[KNIGHT][BLACK] | piece_positions[BISHOP][BLACK];
+    if(white_minor_pieces && black_minor_pieces)
+    {
+        if(piece_positions[KNIGHT][WHITE] || piece_positions[KNIGHT][BLACK])
+        {
+            return true;
+        }
+
+        if((piece_positions[BISHOP][WHITE] & square_color_bits[WHITE]) &&
+           (piece_positions[BISHOP][BLACK] & square_color_bits[BLACK]))
+        {
+            return true;
+        }
+
+        if((piece_positions[BISHOP][WHITE] & square_color_bits[BLACK]) &&
+           (piece_positions[BISHOP][BLACK] & square_color_bits[WHITE]))
+        {
+            return true;
         }
     }
 
