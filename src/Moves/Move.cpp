@@ -58,7 +58,7 @@ bool Move::is_legal(const Board& board) const
     }
 
     // Check that there are no intervening pieces for straight-line moves
-    if( ! moving_piece->is_knight())
+    if(moving_piece->type() != KNIGHT)
     {
         if( ! board.all_empty_between(starting_file, starting_rank, ending_file, ending_rank))
         {

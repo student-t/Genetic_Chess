@@ -10,7 +10,7 @@ class Queen : public Piece
     public:
         explicit Queen(Color color);
 
-        bool is_queen() const override;
+        Piece_Type type() const override;
 };
 
 #endif // QUEEN_H

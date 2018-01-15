@@ -54,36 +54,6 @@ const std::vector<const Move*>& Piece::get_move_list(char file, int rank) const
     return legal_moves[Board::board_index(file, rank)];
 }
 
-bool Piece::is_pawn() const
-{
-    return false;
-}
-
-bool Piece::is_king() const
-{
-    return false;
-}
-
-bool Piece::is_queen() const
-{
-    return false;
-}
-
-bool Piece::is_rook() const
-{
-    return false;
-}
-
-bool Piece::is_bishop() const
-{
-    return false;
-}
-
-bool Piece::is_knight() const
-{
-    return false;
-}
-
 void Piece::add_standard_legal_move(int file_step, int rank_step)
 {
     for(char start_file = 'a'; start_file <= 'h'; ++start_file)

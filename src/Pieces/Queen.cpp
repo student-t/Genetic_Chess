@@ -29,7 +29,7 @@ Queen::Queen(Color color_in) : Piece(color_in, "Q")
     }
 }
 
-bool Queen::is_queen() const
+Piece_Type Queen::type() const
 {
-    return true;
+    return QUEEN;
 }

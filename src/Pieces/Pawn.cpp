@@ -42,10 +42,10 @@ Pawn::Pawn(Color color_in) : Piece(color_in, "P")
     }
 
     std::vector<const Piece*> possible_promotions;
-    possible_promotions.emplace_back(Board::get_queen(color_in));
-    possible_promotions.emplace_back(Board::get_knight(color_in));
-    possible_promotions.emplace_back(Board::get_rook(color_in));
-    possible_promotions.emplace_back(Board::get_bishop(color_in));
+    possible_promotions.emplace_back(Board::get_piece(QUEEN, color_in));
+    possible_promotions.emplace_back(Board::get_piece(KNIGHT, color_in));
+    possible_promotions.emplace_back(Board::get_piece(ROOK, color_in));
+    possible_promotions.emplace_back(Board::get_piece(BISHOP, color_in));
 
     for(auto dir : {RIGHT, LEFT})
     {
@@ -98,7 +98,7 @@ std::string Pawn::pgn_symbol() const
     return "";
 }
 
-bool Pawn::is_pawn() const
+Piece_Type Pawn::type() const
 {
-    return true;
+    return PAWN;
 }

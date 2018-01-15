@@ -20,6 +20,7 @@
 #include "Game_Result.h"
 #include "Players/Player.h"
 #include "Players/Thinking.h"
+#include "Pieces/Piece_Type.h"
 
 class Piece;
 class Clock;
@@ -99,20 +100,12 @@ class Board
         bool has_castled(Color player) const;
         std::array<size_t, 64> all_square_indices_attacked_by(Color player) const;
 
-        static const Pawn* get_pawn(Color color);
-        static const Rook* get_rook(Color color);
-        static const Knight* get_knight(Color color);
-        static const Bishop* get_bishop(Color color);
-        static const Queen* get_queen(Color color);
-        static const King* get_king(Color color);
+        static const Piece* get_piece(Piece_Type type, Color color);
 
     private:
-        std::array<uint64_t, 2> pawn_positions;
-        std::array<uint64_t, 2> rook_positions;
-        std::array<uint64_t, 2> knight_positions;
-        std::array<uint64_t, 2> bishop_positions;
-        std::array<uint64_t, 2> queen_positions;
-        std::array<uint64_t, 2> king_positions;
+        // Bit board representation: indexed by [Piece_Type][Color]
+        std::array<std::array<uint64_t, 2>, 6> piece_positions;
+        std::array<uint64_t, 2> square_color_bits; // indexed by [Color]
 
         std::map<uint64_t, int> repeat_count;
         Color turn_color;
@@ -148,6 +141,7 @@ class Board
 
         void recreate_move_caches();
         void refresh_checking_squares();
+        void generate_square_color_bits();
 
         // Communication channels
         mutable Thinking_Output_Type thinking_indicator;

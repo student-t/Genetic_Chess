@@ -24,12 +24,7 @@ class Piece
 
         const std::vector<const Move*>& get_move_list(char file, int rank) const;
 
-        virtual bool is_pawn() const;
-        virtual bool is_king() const;
-        virtual bool is_queen() const;
-        virtual bool is_rook() const;
-        virtual bool is_bishop() const;
-        virtual bool is_knight() const;
+        virtual Piece_Type type() const = 0;
 
     protected:
         std::vector<std::string> ascii_art_lines;

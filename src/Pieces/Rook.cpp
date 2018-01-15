@@ -30,7 +30,7 @@ Rook::Rook(Color color_in) : Piece(color_in, "R")
     }
 }
 
-bool Rook::is_rook() const
+Piece_Type Rook::type() const
 {
-    return true;
+    return ROOK;
 }
