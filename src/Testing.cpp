@@ -958,6 +958,7 @@ void run_tests()
                   return std::stoi(String::split(x).back()) < std::stoi(String::split(y).back());
               });
 
+    auto watch = Scoped_Stopwatch("perft-bitboard");
     auto test_number = 0;
     auto perft_suite_output_file_name = "";
     for(const auto& line : lines)

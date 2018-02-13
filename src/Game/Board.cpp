@@ -1849,17 +1849,19 @@ bool Board::attacks(char origin_file, int origin_rank, char target_file, int tar
         return false;
     }
 
+    if(attacking_piece->type() == QUEEN)
+    {
+        return true;
+    }
+
     if(file_change == 0 || rank_change == 0)
     {
-        return attacking_piece->type() == ROOK || attacking_piece->type() == QUEEN;
+        return attacking_piece->type() == ROOK;
     }
-
-    if(std::abs(file_change) == std::abs(rank_change))
+    else
     {
-        return attacking_piece->type() == QUEEN || attacking_piece->type() == BISHOP;
+        return attacking_piece->type() == BISHOP;
     }
-
-    return false;
 }
 
 Square Board::piece_is_pinned(char file, int rank) const
