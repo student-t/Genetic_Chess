@@ -291,7 +291,7 @@ uint64_t Board::board_bit(char file, int rank)
 
 Square Board::square_from_index(size_t index)
 {
-    return {'a' + (index % 8), 1 + (index/8)};
+    return {'a' + char(index % 8), 1 + int(index/8)};
 }
 
 void Board::generate_square_color_bits()
