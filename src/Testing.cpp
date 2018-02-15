@@ -458,6 +458,19 @@ void run_tests()
         tests_passed = false;
     }
 
+    Board perf_board8("8/6k1/4b3/8/3N2p1/8/6q1/4n1K1 w - - 10 120");
+    if(perf_board8.legal_moves().size() > 0)
+    {
+        perf_board8.ascii_draw(WHITE);
+        std::cerr << "This should be checkmate for black." << std::endl;
+        for(auto move : perf_board8.legal_moves())
+        {
+            std::cerr << move->game_record_item(perf_board8) << std::endl;
+        }
+        tests_passed = false;
+    }
+
+
     // Test Genetic_AI file loading
     std::cout << "Testing genome file handling ... " << std::flush;
     auto pool_file_name = "test_gene_pool.txt";
@@ -824,10 +837,23 @@ void run_tests()
     {
     }
 
+    Board threat_iterator_bug("8/6K1/2k5/5n2/8/8/8/5R2 w - - 0 1");
+    auto test_move_text = "Rxf5";
+    try
+    {
+        const auto& test_move = threat_iterator_bug.get_move(test_move_text);
+    }
+    catch(const Illegal_Move_Exception&)
+    {
+        threat_iterator_bug.ascii_draw(WHITE);
+        std::cerr << test_move_text << " should have been legal." << std::endl;
+        tests_passed = false;
+    }
+
     Board en_passant_pin_capture("7R/8/8/8/1K2p2q/8/5P2/3k4 w - - 0 1");
     try
     {
-        for(auto move : {"f4", "exf3", "Rxh4"})
+        for(auto move :{"f4", "exf3", "Rxh4"})
         {
             en_passant_pin_capture.submit_move(en_passant_pin_capture.get_move(move));
         }

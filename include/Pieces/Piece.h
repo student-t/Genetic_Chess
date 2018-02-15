@@ -23,6 +23,7 @@ class Piece
         bool can_move(const Move* move) const;
 
         const std::vector<const Move*>& get_move_list(char file, int rank) const;
+        std::vector<Square> all_attacked_squares(char file, int rank, const Board& board) const;
 
         virtual Piece_Type type() const = 0;
 
