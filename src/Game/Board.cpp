@@ -846,8 +846,7 @@ void Board::refresh_checking_squares()
         // Discovered check
         if(auto pinning_square = piece_is_pinned(last_move->start_file(), last_move->start_rank()))
         {
-            // Prevents pawn promotion that results in check from registering here as it would have
-            // already been added in the previous if() block
+            // Prevent pawn promotions from registering twice
             if(checking_squares.empty() || pinning_square != checking_squares.front())
             {
                 checking_squares.push_back(pinning_square);
@@ -859,6 +858,7 @@ void Board::refresh_checking_squares()
         {
             if(auto pinning_square = piece_is_pinned(last_move->end_file(), last_move->start_rank()))
             {
+                // Since two pieces are removed, make sure the discovered check isn't recorded twice
                 if(checking_squares.empty() || pinning_square != checking_squares.front())
                 {
                     checking_squares.push_back(pinning_square);
@@ -871,7 +871,10 @@ void Board::refresh_checking_squares()
            piece_on_square(last_move->end_file(), last_move->end_rank())->type() == KING)
         {
             char rook_file = (last_move->file_change() > 0 ? 'f' : 'd');
-            if(attacks(rook_file, last_move->end_rank(), king_square.file, king_square.rank))
+
+            // If the non-castling king is on the same rank as the castling king, the check will have
+            // been found by the discovered check block above. Only look for checks along columns.
+            if(king_square.file == rook_file && attacks(rook_file, last_move->end_rank(), king_square.file, king_square.rank))
             {
                 checking_squares.push_back({rook_file, last_move->end_rank()});
             }
