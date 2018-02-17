@@ -1323,62 +1323,30 @@ void Board::recreate_move_caches()
 
 bool Board::enough_material_to_checkmate() const
 {
-    for(auto color : {BLACK, WHITE})
+    if(piece_positions[QUEEN][WHITE] || piece_positions[QUEEN][BLACK] ||
+       piece_positions[ROOK][WHITE]  || piece_positions[ROOK][BLACK] ||
+       piece_positions[PAWN][WHITE]  || piece_positions[PAWN][BLACK])
     {
-        // any one is enough to checkmate (with pawn prmotion
-        for(auto type : {QUEEN, ROOK, PAWN})
-        {
-            if(piece_positions[type][color])
-            {
-                return true;
-            }
-        }
-
-        // checkmate possible with knight and bishop + king
-        if(piece_positions[BISHOP][color] && piece_positions[KNIGHT][color])
-        {
-            return true;
-        }
-
-        // Two knights are enough to checkmate
-        auto knights = piece_positions[KNIGHT][color];
-        while(knights)
-        {
-            if((knights & 1) && (knights >> 1))
-            {
-                return true;
-            }
-            knights >>= 1;
-        }
-
-        // checkmate possible with oppositely colored bishops
-        if((piece_positions[BISHOP][color] & square_color_bits[WHITE]) &&
-           (piece_positions[BISHOP][color] & square_color_bits[BLACK]))
-        {
-            return true;
-        }
+        return true;
     }
 
-    auto white_minor_pieces = piece_positions[KNIGHT][WHITE] | piece_positions[BISHOP][WHITE];
-    auto black_minor_pieces = piece_positions[KNIGHT][BLACK] | piece_positions[BISHOP][BLACK];
-    if(white_minor_pieces && black_minor_pieces)
+    auto all_knights = piece_positions[KNIGHT][WHITE] | piece_positions[KNIGHT][BLACK];
+    if(piece_count(all_knights) > 1)
     {
-        if(piece_positions[KNIGHT][WHITE] || piece_positions[KNIGHT][BLACK])
-        {
-            return true;
-        }
+        return true;
+    }
 
-        if((piece_positions[BISHOP][WHITE] & square_color_bits[WHITE]) &&
-           (piece_positions[BISHOP][BLACK] & square_color_bits[BLACK]))
-        {
-            return true;
-        }
+    auto all_bishops = piece_positions[BISHOP][WHITE] | piece_positions[BISHOP][BLACK];
+    if(all_knights && all_bishops)
+    {
+        return true;
+    }
 
-        if((piece_positions[BISHOP][WHITE] & square_color_bits[BLACK]) &&
-           (piece_positions[BISHOP][BLACK] & square_color_bits[WHITE]))
-        {
-            return true;
-        }
+    auto bishops_on_white_squares = all_bishops & square_color_bits[WHITE];
+    auto bishops_on_black_squares = all_bishops & square_color_bits[BLACK];
+    if(bishops_on_white_squares && bishops_on_black_squares)
+    {
+        return true;
     }
 
     return false;
@@ -1686,4 +1654,16 @@ Square Board::piece_is_pinned(char file, int rank) const
 bool Board::has_castled(Color player) const
 {
     return already_castled[player];
+}
+
+int Board::piece_count(uint64_t positions)
+{
+    int count = 0;
+    while(positions)
+    {
+        count += (positions & 1);
+        positions >>= 1;
+    }
+
+    return count;
 }
