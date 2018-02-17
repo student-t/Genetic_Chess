@@ -1,5 +1,6 @@
 #ifndef PIECE_TYPE_H
 #define PIECE_TYPE_H
+
 enum Piece_Type
 {
     PAWN = 0,

@@ -1670,3 +1670,8 @@ int Board::piece_count(uint64_t positions)
 
     return count;
 }
+
+int Board::piece_count(Piece_Type type, Color color) const
+{
+    return piece_count(piece_positions[type][color]);
+}

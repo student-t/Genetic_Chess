@@ -100,6 +100,7 @@ class Board
         bool has_castled(Color player) const;
         std::array<size_t, 64> all_square_indices_attacked_by(Color player) const;
         bool enough_material_to_checkmate() const;
+        int piece_count(Piece_Type type, Color color) const;
 
         static const Piece* get_piece(Piece_Type type, Color color);
 

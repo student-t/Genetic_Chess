@@ -35,7 +35,7 @@ double Opponent_Pieces_Targeted_Gene::score_board(const Board& board) const
         auto target_index = Board::board_index(end_file, end_rank);
         if(target_piece && ! already_counted[target_index])
         {
-            score += piece_strenth_source->piece_value(target_piece);
+            score += piece_strenth_source->piece_value(target_piece->type());
             already_counted[target_index] = true;
         }
     }
