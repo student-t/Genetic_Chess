@@ -37,6 +37,7 @@ class Piece_Strength_Gene : public Gene
         double score_board(const Board& board) const override;
         void renormalize();
         double& piece_value_ref(Piece_Type piece);
+        double piece_value_raw(Piece_Type type) const;
         void gene_specific_mutation() override;
 };
 

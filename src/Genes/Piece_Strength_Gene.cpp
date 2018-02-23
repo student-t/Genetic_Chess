@@ -28,7 +28,7 @@ void Piece_Strength_Gene::reset_properties() const
 {
     for(const auto& piece : piece_types)
     {
-        properties[std::string(1, Board::get_piece(piece, WHITE)->fen_symbol())] = piece_value(piece);
+        properties[std::string(1, Board::get_piece(piece, WHITE)->fen_symbol())] = piece_value_raw(piece);
     }
 }
 
@@ -85,10 +85,15 @@ void Piece_Strength_Gene::gene_specific_mutation()
 
 double Piece_Strength_Gene::piece_value(Piece_Type type) const
 {
-    return piece_strength[type]/normalizing_factor;
+    return piece_value_raw(type)/normalizing_factor;
 }
 
 double& Piece_Strength_Gene::piece_value_ref(Piece_Type type)
+{
+    return piece_strength[type];
+}
+
+double Piece_Strength_Gene::piece_value_raw(Piece_Type type) const
 {
     return piece_strength[type];
 }
