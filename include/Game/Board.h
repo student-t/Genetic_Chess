@@ -96,7 +96,7 @@ class Board
         bool king_is_in_check_after_move(const Move& move) const;
         Square piece_is_pinned(char file, int rank) const; // returns pinning square or {'\0', 0} if none
         bool capture_possible() const;
-        bool all_empty_between(char file_start, int rank_start, char file_end, int rank_end) const;
+        bool all_empty_between(char file_start, int rank_start, char file_end, int rank_end, const Piece* ignored_piece = nullptr) const;
         bool has_castled(Color player) const;
         std::array<size_t, 64> all_square_indices_attacked_by(Color player) const;
         bool enough_material_to_checkmate() const;
@@ -185,7 +185,12 @@ class Board
 
         bool king_multiply_checked() const;
         static bool straight_line_move(char file_start, int rank_start, char file_end, int rank_end);
-        bool attacks(char origin_file, int origin_rank, char target_file, int target_rank) const;
+        bool attacks(char origin_file, int origin_rank, char target_file, int target_rank, const Piece* ignored_piece = nullptr) const;
+
+        // Bit representations of squares attacked by various pieces
+        static uint64_t diagonal_attacks(char file, int rank);
+        static uint64_t straight_attacks(char file, int rank);
+        static uint64_t knight_attacks(char file, int rank);
 
         // Moves with side effects are friends of Board
         friend void Kingside_Castle::side_effects(Board&) const; // moves second piece
