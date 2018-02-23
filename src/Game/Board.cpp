@@ -24,8 +24,6 @@
 #include "Pieces/Queen.h"
 
 #include "Moves/Move.h"
-#include "Moves/Threat_Generator.h"
-#include "Moves/Threat_Iterator.h"
 
 #include "Exceptions/Illegal_Move_Exception.h"
 #include "Exceptions/Promotion_Exception.h"
