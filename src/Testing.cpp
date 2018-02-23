@@ -440,6 +440,11 @@ void run_tests()
         if(result.get_winner() != WHITE)
         {
             perf_board7.ascii_draw(WHITE);
+            for(auto move : perf_board7.legal_moves())
+            {
+                std::cerr << move->game_record_item(perf_board7) << ' ';
+            }
+            std::cerr << std::endl;
             perf_board7.print_game_record(nullptr, nullptr, "", {}, 0, 0, 0, Clock{});
             std::cerr << "This should be checkmate for white." << std::endl;
             tests_passed = false;
