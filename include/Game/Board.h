@@ -187,10 +187,19 @@ class Board
         static bool straight_line_move(char file_start, int rank_start, char file_end, int rank_end);
         bool attacks(char origin_file, int origin_rank, char target_file, int target_rank, const Piece* ignored_piece = nullptr) const;
 
-        // Bit representations of squares attacked by various pieces
-        static uint64_t diagonal_attacks(char file, int rank);
-        static uint64_t straight_attacks(char file, int rank);
-        static uint64_t knight_attacks(char file, int rank);
+        // Returns possible origins of attack on king
+        uint64_t diagonal_attacks(char file, int rank, Color attacking_color) const;
+        uint64_t straight_attacks(char file, int rank, Color attacking_color) const;
+        uint64_t knight_attacks(char file, int rank, Color attacking_color) const;
+
+        // Bit representations of squares attacked by various pieces from all squares (indexed by board_index())
+        static std::array<uint64_t, 64> diagonal_attack_bits;
+        static std::array<uint64_t, 64> straight_attack_bits;
+        static std::array<uint64_t, 64> knight_attack_bits;
+
+        static void preload_diagonal_attacks();
+        static void preload_straight_attacks();
+        static void preload_knight_attacks();
 
         // Moves with side effects are friends of Board
         friend void Kingside_Castle::side_effects(Board&) const; // moves second piece

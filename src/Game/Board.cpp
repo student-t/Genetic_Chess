@@ -47,6 +47,10 @@ const Pawn   Board::black_pawn(BLACK);
 
 const auto all_piece_types = {PAWN, ROOK, KNIGHT, BISHOP, QUEEN, KING};
 
+std::array<uint64_t, 64> Board::straight_attack_bits{};
+std::array<uint64_t, 64> Board::diagonal_attack_bits{};
+std::array<uint64_t, 64> Board::knight_attack_bits{};
+
 const Piece* Board::get_piece(Piece_Type type, Color color)
 {
     static std::array<std::array<const Piece*, 2>, 6> all_pieces = {{{&white_pawn,   &black_pawn},
@@ -124,6 +128,21 @@ Board::Board() :
     ++repeat_count[get_board_hash()]; // Count initial position
     recreate_move_caches();
     generate_square_color_bits();
+
+    if(straight_attack_bits.front() == 0)
+    {
+        preload_straight_attacks();
+    }
+
+    if(diagonal_attack_bits.front() == 0)
+    {
+        preload_diagonal_attacks();
+    }
+
+    if(knight_attack_bits.front() == 0)
+    {
+        preload_knight_attacks();
+    }
 }
 
 Board::Board(const std::string& fen) :
@@ -258,6 +277,21 @@ Board::Board(const std::string& fen) :
     move_count_start_offset = std::stoul(fen_parse.at(5)) - 1;
     recreate_move_caches();
     generate_square_color_bits();
+
+    if(straight_attack_bits.front() == 0)
+    {
+        preload_straight_attacks();
+    }
+
+    if(diagonal_attack_bits.front() == 0)
+    {
+        preload_diagonal_attacks();
+    }
+
+    if(knight_attack_bits.front() == 0)
+    {
+        preload_knight_attacks();
+    }
 }
 
 size_t Board::board_index(char file, int rank)
@@ -777,10 +811,8 @@ bool Board::king_is_in_check() const
 bool Board::safe_for_king(char file, int rank, Color king_color) const
 {
     auto attacking_color = opposite(king_color);
-    auto possible_diagonal_attacks = (piece_positions[BISHOP][attacking_color] | piece_positions[QUEEN][attacking_color] | piece_positions[PAWN][attacking_color] | piece_positions[KING][attacking_color]) & diagonal_attacks(file, rank);
-    auto possible_straight_attacks = (piece_positions[ROOK][attacking_color] | piece_positions[QUEEN][attacking_color] | piece_positions[KING][attacking_color]) & straight_attacks(file, rank);
 
-    for(auto possible_attacks :{possible_diagonal_attacks, possible_straight_attacks})
+    for(auto possible_attacks : {diagonal_attacks(file, rank, attacking_color), straight_attacks(file, rank, attacking_color)})
     {
         size_t square_index = 0;
         while(possible_attacks)
@@ -798,7 +830,7 @@ bool Board::safe_for_king(char file, int rank, Color king_color) const
         }
     }
 
-    return ! (piece_positions[KNIGHT][attacking_color] & knight_attacks(file, rank));
+    return ! knight_attacks(file, rank, attacking_color);
 }
 
 std::array<size_t, 64> Board::all_square_indices_attacked_by(Color player) const
@@ -832,9 +864,9 @@ void Board::refresh_checking_squares()
     {
         auto king_color = whose_turn();
         auto attacking_color = opposite(king_color);
-        auto possible_diagonal_attacks = (piece_positions[BISHOP][attacking_color] | piece_positions[QUEEN][attacking_color] | piece_positions[PAWN][attacking_color] | piece_positions[KING][attacking_color]) & diagonal_attacks(king_square.file, king_square.rank);
-        auto possible_straight_attacks = (piece_positions[ROOK][attacking_color] | piece_positions[QUEEN][attacking_color] | piece_positions[KING][attacking_color]) & straight_attacks(king_square.file, king_square.rank);
-        auto possible_knight_attacks = piece_positions[KNIGHT][attacking_color] & knight_attacks(king_square.file, king_square.rank);
+        auto possible_diagonal_attacks = diagonal_attacks(king_square.file, king_square.rank, attacking_color);
+        auto possible_straight_attacks = straight_attacks(king_square.file, king_square.rank, attacking_color);
+        auto possible_knight_attacks = knight_attacks(king_square.file, king_square.rank, attacking_color);
 
         for(auto possible_attacks : {possible_diagonal_attacks, possible_straight_attacks, possible_knight_attacks})
         {
@@ -1615,57 +1647,93 @@ bool Board::attacks(char origin_file, int origin_rank, char target_file, int tar
     }
 }
 
-uint64_t Board::diagonal_attacks(char file, int rank)
+void Board::preload_diagonal_attacks()
 {
-    uint64_t result = 0;
-    for(int file_step = -1; file_step <= 1; file_step += 2)
+    for(char file = 'a'; file <= 'h'; ++file)
     {
-        for(int rank_step = -1; rank_step <= 1; rank_step += 2)
+        for(int rank = 1; rank <= 8; ++rank)
         {
-            for(int step = 1; true; ++step)
+            auto& attack_entry = diagonal_attack_bits[board_index(file, rank)];
+            attack_entry = 0;
+            
+            for(int file_step = -1; file_step <= 1; file_step += 2)
             {
-                auto attacked_file = file + step*file_step;
-                auto attacked_rank = rank + step*rank_step;
-                if( ! inside_board(attacked_file, attacked_rank))
+                for(int rank_step = -1; rank_step <= 1; rank_step += 2)
                 {
-                    break;
-                }
+                    for(int step = 1; true; ++step)
+                    {
+                        auto attacked_file = file + step*file_step;
+                        auto attacked_rank = rank + step*rank_step;
+                        if(!inside_board(attacked_file, attacked_rank))
+                        {
+                            break;
+                        }
 
-                result |= board_bit(attacked_file, attacked_rank);
+                        attack_entry |= board_bit(attacked_file, attacked_rank);
+                    }
+                }
             }
         }
     }
-
-    return result;
 }
 
-uint64_t Board::straight_attacks(char file, int rank)
+uint64_t Board::diagonal_attacks(char file, int rank, Color attacking_color) const
 {
-    uint64_t result = 0;
-
-    for(char attacked_file = 'a'; attacked_file <= 'h'; ++attacked_file)
-    {
-        result |= board_bit(attacked_file, rank);
-    }
-
-    for(int attacked_rank = 1; attacked_rank <= 8; ++attacked_rank)
-    {
-        result |= board_bit(file, attacked_rank);
-    }
-
-    result &= ~board_bit(file, rank); // remove origin square
-    return result;
+    return (piece_positions[BISHOP][attacking_color] | 
+            piece_positions[QUEEN][attacking_color] | 
+            piece_positions[PAWN][attacking_color] | 
+            piece_positions[KING][attacking_color]) & diagonal_attack_bits[board_index(file, rank)];
 }
 
-uint64_t Board::knight_attacks(char file, int rank)
+void Board::preload_straight_attacks()
 {
-    uint64_t result = 0;
-    for(auto move : get_piece(KNIGHT, WHITE)->get_move_list(file, rank))
+    for(char file = 'a'; file <= 'h'; ++file)
     {
-        result |= board_bit(move->end_file(), move->end_rank());
-    }
+        for(int rank = 1; rank <= 8; ++rank)
+        {
+            auto& attack_entry = straight_attack_bits[board_index(file, rank)];
+            attack_entry = 0;
+            for(char attacked_file = 'a'; attacked_file <= 'h'; ++attacked_file)
+            {
+                 attack_entry |= board_bit(attacked_file, rank);
+            }
 
-    return result;
+            for(int attacked_rank = 1; attacked_rank <= 8; ++attacked_rank)
+            {
+                attack_entry |= board_bit(file, attacked_rank);
+            }
+
+            attack_entry &= ~board_bit(file, rank); // remove origin square
+        }
+    }
+}
+
+uint64_t Board::straight_attacks(char file, int rank, Color attacking_color) const
+{
+    return (piece_positions[ROOK][attacking_color] | 
+            piece_positions[QUEEN][attacking_color] | 
+            piece_positions[KING][attacking_color]) & straight_attack_bits[board_index(file, rank)];
+}
+
+void Board::preload_knight_attacks()
+{
+    for(char file = 'a'; file <= 'h'; ++file)
+    {
+        for(int rank = 1; rank <= 8; ++rank)
+        {
+            auto& attack_entry = knight_attack_bits[board_index(file, rank)];
+            attack_entry = 0;
+            for(auto move : get_piece(KNIGHT, WHITE)->get_move_list(file, rank))
+            {
+                attack_entry |= board_bit(move->end_file(), move->end_rank());
+            }
+        }
+    }
+}
+
+uint64_t Board::knight_attacks(char file, int rank, Color attacking_color) const
+{
+    return piece_positions[KNIGHT][attacking_color] & knight_attack_bits[board_index(file, rank)];
 }
 
 Square Board::piece_is_pinned(char file, int rank) const
