@@ -49,26 +49,13 @@ const auto all_piece_types = {PAWN, ROOK, KNIGHT, BISHOP, QUEEN, KING};
 
 const Piece* Board::get_piece(Piece_Type type, Color color)
 {
-    switch(type)
-    {
-        case PAWN:
-            return color == WHITE ? &white_pawn : &black_pawn;
-
-        case ROOK:
-            return color == WHITE ? &white_rook : &black_rook;
-
-        case KNIGHT:
-            return color == WHITE ? &white_knight : &black_knight;
-
-        case BISHOP:
-            return color == WHITE ? &white_bishop : &black_bishop;
-
-        case QUEEN:
-            return color == WHITE ? &white_queen : &black_queen;
-
-        case KING:
-            return color == WHITE ? &white_king : &black_king;
-    }
+    static std::array<std::array<const Piece*, 2>, 6> all_pieces = {{{&white_pawn,   &black_pawn},
+                                                                     {&white_rook,   &black_rook},
+                                                                     {&white_knight, &black_knight},
+                                                                     {&white_bishop, &black_bishop},
+                                                                     {&white_queen,  &black_queen},
+                                                                     {&white_king,   &black_king}}};
+    return all_pieces[type][color];
 }
 
 
