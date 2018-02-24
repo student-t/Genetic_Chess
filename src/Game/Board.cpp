@@ -53,12 +53,14 @@ std::array<uint64_t, 64> Board::knight_attack_bits{};
 
 const Piece* Board::get_piece(Piece_Type type, Color color)
 {
-    static std::array<std::array<const Piece*, 2>, 6> all_pieces = {{{&white_pawn,   &black_pawn},
-                                                                     {&white_rook,   &black_rook},
-                                                                     {&white_knight, &black_knight},
-                                                                     {&white_bishop, &black_bishop},
-                                                                     {&white_queen,  &black_queen},
-                                                                     {&white_king,   &black_king}}};
+    // Pedantically-correct bracing (nesting: C++ init_list, C-array, C++ init_list, C-array)
+    // https://stackoverflow.com/a/12844625/2156537
+    static std::array<std::array<const Piece*, 2>, 6> all_pieces = {{{{&white_pawn,   &black_pawn  }},
+                                                                     {{&white_rook,   &black_rook  }},
+                                                                     {{&white_knight, &black_knight}},
+                                                                     {{&white_bishop, &black_bishop}},
+                                                                     {{&white_queen,  &black_queen }},
+                                                                     {{&white_king,   &black_king  }}}};
     return all_pieces[type][color];
 }
 
