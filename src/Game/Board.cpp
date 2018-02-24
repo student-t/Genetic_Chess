@@ -324,7 +324,7 @@ void Board::generate_square_color_bits()
         }
     }
 
-    // Assert every square is a different color
+    // Assert every square has one color
     assert(~(square_color_bits[WHITE] ^ square_color_bits[BLACK]) == 0);
 }
 
