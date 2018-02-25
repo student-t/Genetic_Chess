@@ -105,9 +105,13 @@ class Board
         static const Piece* get_piece(Piece_Type piece_type, Color color);
 
     private:
+        // Initalize values used by all Boards (hashes, bit patterns, etc.)
+        static std::mutex static_value_initialization_lock;
+        static bool static_values_initialized;
+        static void generate_static_values();
+
         // Bit board representation: indexed by [Piece_Type][Color]
         std::array<std::array<uint64_t, 2>, 6> piece_positions;
-        std::array<uint64_t, 2> square_color_bits; // indexed by [Color]
 
         std::map<uint64_t, int> repeat_count;
         Color turn_color;
@@ -143,7 +147,6 @@ class Board
 
         void recreate_move_caches();
         void refresh_checking_squares();
-        void generate_square_color_bits();
 
         // Communication channels
         mutable Thinking_Output_Type thinking_indicator;
@@ -164,12 +167,11 @@ class Board
         // Zobrist hashing
         uint64_t board_hash;
 
-        void initialize_board_hash();
+        static void initialize_board_hash_values();
+        void initialize_this_board_hash();
         uint64_t get_board_hash() const;
 
         // Hash values for squares
-        static std::mutex hash_lock;
-        static bool hash_values_initialized;
         static std::array<std::map<const Piece*, uint64_t>, 64> square_hash_values; // [board_index][moved?][piece_hash]
         static std::array<uint64_t, 64> en_passant_hash_values;
         static std::array<uint64_t, 64> castling_hash_values;
@@ -200,6 +202,11 @@ class Board
         static void preload_diagonal_attacks();
         static void preload_straight_attacks();
         static void preload_knight_attacks();
+
+        // Bit representation of colors of squares
+        static std::array<uint64_t, 2> square_color_bits; // indexed by [Color]
+
+        static void generate_square_color_bits();
 
         // Moves with side effects are friends of Board
         friend void Kingside_Castle::side_effects(Board&) const; // moves second piece

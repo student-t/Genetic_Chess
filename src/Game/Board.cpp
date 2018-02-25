@@ -45,11 +45,13 @@ const Queen  Board::black_queen(BLACK);
 const King   Board::black_king(BLACK);
 const Pawn   Board::black_pawn(BLACK);
 
-const auto all_piece_types = {PAWN, ROOK, KNIGHT, BISHOP, QUEEN, KING};
+const static auto all_piece_types = {PAWN, ROOK, KNIGHT, BISHOP, QUEEN, KING};
 
 std::array<uint64_t, 64> Board::straight_attack_bits{};
 std::array<uint64_t, 64> Board::diagonal_attack_bits{};
 std::array<uint64_t, 64> Board::knight_attack_bits{};
+
+std::array<uint64_t, 2> Board::square_color_bits{};
 
 const Piece* Board::get_piece(Piece_Type type, Color color)
 {
@@ -66,8 +68,8 @@ const Piece* Board::get_piece(Piece_Type type, Color color)
 }
 
 
-std::mutex Board::hash_lock;
-bool Board::hash_values_initialized = false;
+std::mutex Board::static_value_initialization_lock;
+bool Board::static_values_initialized = false;
 std::array<std::map<const Piece*, uint64_t>, 64> Board::square_hash_values{};
 std::array<uint64_t, 64> Board::en_passant_hash_values{};
 std::array<uint64_t, 64> Board::castling_hash_values{};
@@ -76,7 +78,6 @@ std::array<uint64_t, 2> Board::color_hash_values{}; // for whose_turn() hashing
 
 Board::Board() :
     piece_positions{},
-    square_color_bits{},
     turn_color(WHITE),
     unmoved_positions{},
     en_passant_target({'\0', 0}),
@@ -87,6 +88,9 @@ Board::Board() :
     capturing_move_available(false),
     thinking_indicator(NO_THINKING)
 {
+    generate_static_values();
+    initialize_this_board_hash();
+
     #ifdef DEBUG
     for(char file = 'a'; file <= 'h'; ++file)
     {
@@ -98,8 +102,6 @@ Board::Board() :
         }
     }
     #endif // DEBUG
-
-    initialize_board_hash();
 
     for(auto color : {WHITE, BLACK})
     {
@@ -130,27 +132,10 @@ Board::Board() :
 
     ++repeat_count[get_board_hash()]; // Count initial position
     recreate_move_caches();
-    generate_square_color_bits();
-
-    if(straight_attack_bits.front() == 0)
-    {
-        preload_straight_attacks();
-    }
-
-    if(diagonal_attack_bits.front() == 0)
-    {
-        preload_diagonal_attacks();
-    }
-
-    if(knight_attack_bits.front() == 0)
-    {
-        preload_knight_attacks();
-    }
 }
 
 Board::Board(const std::string& fen) :
     piece_positions{},
-    square_color_bits{},
     turn_color(WHITE),
     unmoved_positions{},
     en_passant_target({'\0', 0}),
@@ -160,7 +145,8 @@ Board::Board(const std::string& fen) :
     capturing_move_available(false),
     thinking_indicator(NO_THINKING)
 {
-    initialize_board_hash();
+    generate_static_values();
+    initialize_this_board_hash();
 
     auto fen_parse = String::split(fen);
     if(fen_parse.size() != 6)
@@ -279,22 +265,6 @@ Board::Board(const std::string& fen) :
 
     move_count_start_offset = std::stoul(fen_parse.at(5)) - 1;
     recreate_move_caches();
-    generate_square_color_bits();
-
-    if(straight_attack_bits.front() == 0)
-    {
-        preload_straight_attacks();
-    }
-
-    if(diagonal_attack_bits.front() == 0)
-    {
-        preload_diagonal_attacks();
-    }
-
-    if(knight_attack_bits.front() == 0)
-    {
-        preload_knight_attacks();
-    }
 }
 
 size_t Board::board_index(char file, int rank)
@@ -1449,15 +1419,8 @@ Color Board::first_to_move() const
     return first_player_to_move;
 }
 
-void Board::initialize_board_hash()
+void Board::initialize_board_hash_values()
 {
-    std::lock_guard<std::mutex> hash_guard(hash_lock);
-
-    if(hash_values_initialized)
-    {
-        return;
-    }
-
     for(auto color : {WHITE, BLACK})
     {
         color_hash_values[color] = Random::random_unsigned_int64();
@@ -1487,7 +1450,10 @@ void Board::initialize_board_hash()
             }
         }
     }
+}
 
+void Board::initialize_this_board_hash()
+{
     board_hash = 0;
     board_hash ^= get_color_hash(whose_turn());
     for(char file = 'a'; file <= 'h'; ++file)
@@ -1497,8 +1463,6 @@ void Board::initialize_board_hash()
             board_hash ^= get_square_hash(file, rank);
         }
     }
-
-    hash_values_initialized = true;
 }
 
 void Board::update_board_hash(char file, int rank)
@@ -1825,4 +1789,22 @@ int Board::piece_count(uint64_t positions)
 int Board::piece_count(Piece_Type type, Color color) const
 {
     return piece_count(piece_positions[type][color]);
+}
+
+void Board::generate_static_values()
+{
+    std::lock_guard<std::mutex> static_initialization_guard(static_value_initialization_lock);
+
+    if(static_values_initialized)
+    {
+        return;
+    }
+
+    initialize_board_hash_values();
+    generate_square_color_bits();
+    preload_straight_attacks();
+    preload_diagonal_attacks();
+    preload_knight_attacks();
+
+    static_values_initialized = true;
 }
