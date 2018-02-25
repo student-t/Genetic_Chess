@@ -9,8 +9,6 @@ class Knight : public Piece
 {
     public:
         explicit Knight(Color color);
-
-        Piece_Type type() const override;
 };
 
 #endif // KNIGHT_H

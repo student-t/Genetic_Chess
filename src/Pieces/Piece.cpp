@@ -8,9 +8,10 @@
 #include "Game/Board.h"
 #include "Utility.h"
 
-Piece::Piece(Color color_in, const std::string& symbol_in) :
+Piece::Piece(Color color_in, const std::string& symbol_in, Piece_Type type_in) :
     my_color(color_in),
     symbol(symbol_in),
+    my_type(type_in),
     legal_moves(64)
 {
 }
@@ -53,6 +54,11 @@ bool Piece::can_move(const Move* move) const
 const std::vector<const Move*>& Piece::get_move_list(char file, int rank) const
 {
     return legal_moves[Board::board_index(file, rank)];
+}
+
+Piece_Type Piece::type() const
+{
+    return my_type;
 }
 
 void Piece::add_standard_legal_move(int file_step, int rank_step)

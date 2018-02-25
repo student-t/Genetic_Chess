@@ -9,8 +9,6 @@ class Rook : public Piece
 {
     public:
         explicit Rook(Color color_in);
-
-        Piece_Type type() const override;
 };
 
 #endif // ROOK_H

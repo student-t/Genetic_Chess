@@ -10,6 +10,7 @@
 #include "Game/Color.h"
 #include "Game/Square.h"
 #include "Pieces/Piece.h"
+#include "Pieces/Piece_Types.h"
 
 King_Confinement_Gene::King_Confinement_Gene() : maximum_score(0.0)
 {

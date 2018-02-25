@@ -16,12 +16,13 @@
 #include "Moves/En_Passant.h"
 
 #include "Pieces/Piece.h"
+#include "Pieces/Piece_Types.h"
 #include "Pieces/Rook.h"
 #include "Pieces/Knight.h"
 #include "Pieces/Bishop.h"
 #include "Pieces/Queen.h"
 
-Pawn::Pawn(Color color_in) : Piece(color_in, "P")
+Pawn::Pawn(Color color_in) : Piece(color_in, "P", PAWN)
 {
     // Ranks where pawns can exist
     auto base_rank = (color_in == WHITE ? 2 : 7);
@@ -97,9 +98,4 @@ Pawn::Pawn(Color color_in) : Piece(color_in, "P")
 std::string Pawn::pgn_symbol() const
 {
     return "";
-}
-
-Piece_Type Pawn::type() const
-{
-    return PAWN;
 }

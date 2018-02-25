@@ -15,7 +15,7 @@
 #include "Game/Square.h"
 
 #include "Pieces/Piece.h"
-#include "Pieces/Piece_Type.h"
+#include "Pieces/Piece_Types.h"
 #include "Pieces/Pawn.h"
 #include "Pieces/Rook.h"
 #include "Pieces/Knight.h"
@@ -61,6 +61,7 @@ const Piece* Board::get_piece(Piece_Type type, Color color)
                                                                      {{&white_bishop, &black_bishop}},
                                                                      {{&white_queen,  &black_queen }},
                                                                      {{&white_king,   &black_king  }}}};
+
     return all_pieces[type][color];
 }
 

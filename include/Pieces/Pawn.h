@@ -13,7 +13,6 @@ class Pawn : public Piece
         explicit Pawn(Color color_in);
 
         std::string pgn_symbol() const override;
-        Piece_Type type() const override;
 };
 
 #endif // PAWN_H

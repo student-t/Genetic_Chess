@@ -6,6 +6,7 @@
 
 #include "Game/Board.h"
 #include "Pieces/Piece.h"
+#include "Pieces/Piece_Types.h"
 
 double Passed_Pawn_Gene::score_board(const Board& board) const
 {

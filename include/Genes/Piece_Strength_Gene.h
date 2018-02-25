@@ -8,7 +8,7 @@
 #include <memory>
 #include <vector>
 
-#include "Pieces/Piece_Type.h"
+#include "Pieces/Piece_Types.h"
 
 class Piece;
 class Board;
@@ -23,21 +23,20 @@ class Piece_Strength_Gene : public Gene
 
         std::string name() const override;
 
-        double piece_value(Piece_Type piece) const;
+        double piece_value(Piece_Type type) const;
 
     protected:
         void reset_properties() const override;
         void load_properties() override;
 
     private:
-        static const std::vector<Piece_Type> piece_types;
         std::array<double, 6> piece_strength;
         double normalizing_factor;
 
         double score_board(const Board& board) const override;
         void renormalize();
-        double& piece_value_ref(Piece_Type piece);
         double piece_value_raw(Piece_Type type) const;
+        double& piece_value_ref(Piece_Type type);
         void gene_specific_mutation() override;
 };
 

@@ -9,8 +9,6 @@ class Queen : public Piece
 {
     public:
         explicit Queen(Color color);
-
-        Piece_Type type() const override;
 };
 
 #endif // QUEEN_H

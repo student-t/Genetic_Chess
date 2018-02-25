@@ -1,5 +1,5 @@
-#ifndef PIECE_TYPE_H
-#define PIECE_TYPE_H
+#ifndef PIECE_TYPES_H
+#define PIECE_TYPES_H
 
 enum Piece_Type
 {
@@ -11,4 +11,4 @@ enum Piece_Type
     KING = 5
 };
 
-#endif // PIECE_TYPE_H
+#endif // PIECE_TYPES_H

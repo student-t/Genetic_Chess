@@ -18,13 +18,13 @@
 #include "Color.h"
 #include "Square.h"
 #include "Game_Result.h"
+#include "Pieces/Piece_Types.h"
 #include "Players/Player.h"
 #include "Players/Thinking.h"
-#include "Pieces/Piece_Type.h"
 
-class Piece;
 class Clock;
 
+class Piece;
 class Pawn;
 class Rook;
 class Knight;
@@ -102,7 +102,7 @@ class Board
         bool enough_material_to_checkmate() const;
         int piece_count(Piece_Type type, Color color) const;
 
-        static const Piece* get_piece(Piece_Type type, Color color);
+        static const Piece* get_piece(Piece_Type piece_type, Color color);
 
     private:
         // Bit board representation: indexed by [Piece_Type][Color]
