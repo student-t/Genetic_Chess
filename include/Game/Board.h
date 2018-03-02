@@ -95,12 +95,15 @@ class Board
         bool king_is_in_check() const;
         bool king_is_in_check_after_move(const Move& move) const;
         Square piece_is_pinned(char file, int rank) const; // returns pinning square or {'\0', 0} if none
-        bool capture_possible() const;
         bool all_empty_between(char file_start, int rank_start, char file_end, int rank_end, const Piece* ignored_piece = nullptr) const;
-        bool has_castled(Color player) const;
-        std::array<size_t, 64> all_square_indices_attacked_by(Color player) const;
         bool enough_material_to_checkmate() const;
         int piece_count(Piece_Type type, Color color) const;
+
+        // Methods for gene reference
+        bool capture_possible() const;
+        bool has_castled(Color player) const;
+        std::array<size_t, 64> all_square_indices_attacked_by(Color player) const;
+        size_t number_of_promoted_pawns(Color color) const;
 
         static const Piece* get_piece(Piece_Type piece_type, Color color);
 
@@ -122,7 +125,11 @@ class Board
         std::array<Square, 2> king_location;
         size_t move_count_start_offset;
         Color first_player_to_move;
+
+        // Information cache for gene reference
         std::array<bool, 2> already_castled;
+        std::array<size_t, 2> promoted_pawns_count;
+        bool capturing_move_available;
 
         // Pieces
         static const Rook   white_rook;
@@ -142,7 +149,6 @@ class Board
         // Caches
         std::vector<const Move*> other_moves_cache;
         std::vector<const Move*> legal_moves_cache;
-        bool capturing_move_available;
         std::vector<Square> checking_squares;
 
         void recreate_move_caches();

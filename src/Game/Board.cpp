@@ -85,6 +85,7 @@ Board::Board() :
     move_count_start_offset(0),
     first_player_to_move(WHITE),
     already_castled{{false, false}},
+    promoted_pawns_count{{0, 0}},
     capturing_move_available(false),
     thinking_indicator(NO_THINKING)
 {
@@ -142,6 +143,7 @@ Board::Board(const std::string& fen) :
     starting_fen(fen),
     king_location{{ {'\0', 0}, {'\0', 0} }},
     already_castled{{false, false}},
+    promoted_pawns_count{{0, 0}},
     capturing_move_available(false),
     thinking_indicator(NO_THINKING)
 {
@@ -1807,4 +1809,9 @@ void Board::generate_static_values()
     preload_knight_attacks();
 
     static_values_initialized = true;
+}
+
+size_t Board::number_of_promoted_pawns(Color player) const
+{
+    return promoted_pawns_count[player];
 }
