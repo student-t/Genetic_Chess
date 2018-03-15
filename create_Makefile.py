@@ -1,6 +1,6 @@
 #!/bin/python
 
-import os, functools, subprocess
+import os, functools, subprocess, sys
 
 def make_sort(a, b):
     if a == b:
@@ -52,6 +52,7 @@ depends['clean'] = []
 
 options = dict()
 obj_dest = dict()
+bin_dest = dict()
 operations = dict()
 bins = dict()
 
@@ -60,6 +61,7 @@ for target in final_targets:
     operations[target] = []
 
     obj_dest[target]= "$(" + target.upper() + "_OBJ_DIR)"
+    bin_dest[target]= "$(" + target.upper() + "_BIN_DIR)"
 
     out_variable = "$(OUT_" + target.upper() + ")"
     all_objects = "$(OBJ_" + target.upper() + ")"
@@ -70,17 +72,13 @@ for target in final_targets:
                                           "$(LDFLAGS_" + target.upper() + ")",
                                           "$(CFLAGS)",
                                           "$(CFLAGS_" + target.upper() + ")"])]
-    bins[target] = os.path.join('bin', target, program_name)
-    depends[target] = []
-    for sub in ['before_', 'after_']:
-        depends[sub + target] = []
-        depends[target].append(sub + target)
-    depends[target].insert(1, out_variable)
-
+    bins[target] = os.path.join(bin_dest[target], program_name)
+    depends[target] = ['before_' + target, out_variable]
+    depends['before_' + target] = []
     depends[out_variable] = [all_objects]
     depends['clean'].append('clean_' + target)
     depends['clean_' + target] = []
-    operations['clean_' + target] = ["rm " + all_objects + " " + out_variable]
+    operations['clean_' + target] = ["rm -rf " + obj_dest[target] + " " + bin_dest[target]]
 
 depends['.PHONY'] = []
 for target in sorted(depends.keys(), key=functools.cmp_to_key(make_sort)):
@@ -89,43 +87,84 @@ for target in sorted(depends.keys(), key=functools.cmp_to_key(make_sort)):
     if target != '.PHONY' and not target.startswith('$'):
         depends['.PHONY'].append(target)
 
-compiler = 'clang++'
-
-base_options = [
-        "-std=c++14",
-        "-Weverything",
-        "-Wno-padded",
-        "-Wno-c++98-compat",
-        "-Wno-exit-time-destructors",
-        "-Wno-global-constructors",
-	"-Wnon-virtual-dtor", 
-	"-Wshadow", 
-	"-Winit-self", 
-	"-Wredundant-decls", 
-	"-Wcast-align", 
-	"-Wundef", 
-	"-Wfloat-equal", 
-	"-Wunreachable-code", 
-	"-Wmissing-declarations", 
-	"-Wmissing-include-dirs", 
-	"-Wswitch-enum", 
-	"-Wswitch-default", 
-	"-Wmain", 
-	"-pedantic", 
-	"-Wextra", 
-	"-Wall", 
-	"-Iinclude"]
-base_linker_options = ["-pthread", "-fexceptions"]
-
 options_list = dict()
-options_list['debug'] = ["-g", "-Og", "-DDEBUG"]
-options_list['release'] = ["-Ofast", "-DNDEBUG"]
-options_list['optimized_debug'] = ["-Ofast", "-DDEBUG"]
+linker_options = dict()
+if len(sys.argv) == 1:
+    print('Specify a compiler ("gcc" or "clang")')
+    sys.exit(1)
+elif sys.argv[1] == 'gcc':
+    compiler = 'g++'
+    options_list['debug'] = ["-g", "-DDEBUG"]
+    options_list['release'] = ["-s", "-Ofast", "-DNDEBUG"]
+    options_list['optimized_debug'] = ["-Ofast", "-DDEBUG"]
+
+    base_options = [
+            "-Wnon-virtual-dtor", 
+            "-Wshadow", 
+            "-Winit-self", 
+            "-Wredundant-decls", 
+            "-Wcast-align", 
+            "-Wundef", 
+            "-Wfloat-equal", 
+            "-Wunreachable-code", 
+            "-Wmissing-declarations", 
+            "-Wmissing-include-dirs", 
+            "-Wswitch-enum", 
+            "-Wswitch-default", 
+            "-Wzero-as-null-pointer-constant", 
+            "-Wmain", 
+            "-pedantic", 
+            "-Wextra", 
+            "-Wall", 
+            "-Iinclude"]
+    base_linker_options = ["-pthread", "-fexceptions"]
+
+    linker_options['debug'] = []
+    linker_options['release'] = ['-flto', '-fuse-linker-plugin']
+    linker_options['optimized_debug'] = ['-flto', '-fuse-linker-plugin']
+elif sys.argv[1] == 'clang':
+    compiler = 'clang++'
+    options_list['debug'] = ["-g", "-Og", "-DDEBUG"]
+    options_list['release'] = ["-Ofast", "-DNDEBUG"]
+    options_list['optimized_debug'] = ["-Ofast", "-DDEBUG"]
+
+    base_options = [
+            "-std=c++14",
+            "-Weverything",
+            "-Wno-padded",
+            "-Wno-c++98-compat",
+            "-Wno-exit-time-destructors",
+            "-Wno-global-constructors",
+            "-Wnon-virtual-dtor", 
+            "-Wshadow", 
+            "-Winit-self", 
+            "-Wredundant-decls", 
+            "-Wcast-align", 
+            "-Wundef", 
+            "-Wfloat-equal", 
+            "-Wunreachable-code", 
+            "-Wmissing-declarations", 
+            "-Wmissing-include-dirs", 
+            "-Wswitch-enum", 
+            "-Wswitch-default", 
+            "-Wmain", 
+            "-pedantic", 
+            "-Wextra", 
+            "-Wall", 
+            "-Iinclude"]
+    base_linker_options = ["-pthread", "-fexceptions"]
+
+    linker_options['debug'] = []
+    linker_options['release'] = ['-flto']
+    linker_options['optimized_debug'] = ['-flto']
+else:
+    print('Uknown compiler: ' + sys.argv[1])
+    sys.exit(1)
+
 
 obj_dir_written = []
 for target in final_targets:
-    bin_dir = os.path.dirname(bins[target])
-    operations['before_' + target].append('test -d ' + bin_dir + ' || mkdir -p ' + bin_dir)
+    operations['before_' + target].append('mkdir -p ' + bin_dest[target])
     for (dirpath, dirnames, filenames) in os.walk(os.getcwd()):
         dirpath = dirpath[len(os.getcwd()) + 1 :]
         for source_file in [os.path.join(dirpath, fn) for fn in filenames if fn.endswith('.cpp')]:
@@ -135,17 +174,11 @@ for target in final_targets:
             operations[obj_file] = [' '.join(['$(CXX)', "$(CFLAGS)", "$(LDFLAGS)", options[target], "-c", source_file, "-o", obj_file])]
             obj_dest_dir = os.path.dirname(obj_file)
             if obj_dest_dir not in obj_dir_written:
-                operations['before_' + target].append('test -d ' + obj_dest_dir + ' || mkdir -p ' + obj_dest_dir)
+                operations['before_' + target].append('mkdir -p ' + obj_dest_dir)
                 obj_dir_written.append(obj_dest_dir)
-
 
             compile_depends = subprocess.check_output([compiler] + base_options + options_list[target] + ['-MM', source_file]).decode('ascii').split()
             depends[obj_file].extend(sorted(list(set(d for d in compile_depends if d != '\\' and d != source_file and not d.endswith(':')))))
-
-linker_options = dict()
-linker_options['debug'] = []
-linker_options['release'] = ['-flto']
-linker_options['optimized_debug'] = ['-flto']
 
 with open("Makefile", 'w') as make_file:
     # Variables
@@ -156,6 +189,7 @@ with open("Makefile", 'w') as make_file:
     make_file.write("LDFLAGS = " + " ".join(base_linker_options) + "\n")
     make_file.write("\n")
     for target in final_targets:
+        make_file.write(target.upper() + '_BIN_DIR = bin/' + target + '\n')
         make_file.write("OUT_" + target.upper() + " = " + bins[target] + '\n')
         make_file.write(target.upper() + '_OBJ_DIR = obj/' + target + '\n')
         make_file.write('OBJ_' + target.upper() + ' = ')

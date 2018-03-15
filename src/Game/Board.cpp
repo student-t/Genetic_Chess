@@ -808,9 +808,9 @@ bool Board::safe_for_king(char file, int rank, Color king_color) const
     return ! knight_attacks(file, rank, attacking_color);
 }
 
-std::array<size_t, 64> Board::all_square_indices_attacked_by(Color player) const
+std::array<bool, 64> Board::all_square_indices_attacked_by(Color player) const
 {
-    std::array<size_t, 64> attacked_indices{};
+    std::array<bool, 64> attacked_indices{};
 
     for(char file = 'a'; file <= 'h'; ++file)
     {
