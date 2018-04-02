@@ -35,34 +35,34 @@ before_debug :
 	mkdir -p $(DEBUG_BIN_DIR)
 	mkdir -p $(DEBUG_OBJ_DIR)
 	mkdir -p $(DEBUG_OBJ_DIR)/src
+	mkdir -p $(DEBUG_OBJ_DIR)/src/Genes
 	mkdir -p $(DEBUG_OBJ_DIR)/src/Exceptions
 	mkdir -p $(DEBUG_OBJ_DIR)/src/Game
+	mkdir -p $(DEBUG_OBJ_DIR)/src/Moves
 	mkdir -p $(DEBUG_OBJ_DIR)/src/Players
 	mkdir -p $(DEBUG_OBJ_DIR)/src/Pieces
-	mkdir -p $(DEBUG_OBJ_DIR)/src/Moves
-	mkdir -p $(DEBUG_OBJ_DIR)/src/Genes
 
 before_optimized_debug : 
 	mkdir -p $(OPTIMIZED_DEBUG_BIN_DIR)
 	mkdir -p $(OPTIMIZED_DEBUG_OBJ_DIR)
 	mkdir -p $(OPTIMIZED_DEBUG_OBJ_DIR)/src
+	mkdir -p $(OPTIMIZED_DEBUG_OBJ_DIR)/src/Genes
 	mkdir -p $(OPTIMIZED_DEBUG_OBJ_DIR)/src/Exceptions
 	mkdir -p $(OPTIMIZED_DEBUG_OBJ_DIR)/src/Game
+	mkdir -p $(OPTIMIZED_DEBUG_OBJ_DIR)/src/Moves
 	mkdir -p $(OPTIMIZED_DEBUG_OBJ_DIR)/src/Players
 	mkdir -p $(OPTIMIZED_DEBUG_OBJ_DIR)/src/Pieces
-	mkdir -p $(OPTIMIZED_DEBUG_OBJ_DIR)/src/Moves
-	mkdir -p $(OPTIMIZED_DEBUG_OBJ_DIR)/src/Genes
 
 before_release : 
 	mkdir -p $(RELEASE_BIN_DIR)
 	mkdir -p $(RELEASE_OBJ_DIR)
 	mkdir -p $(RELEASE_OBJ_DIR)/src
+	mkdir -p $(RELEASE_OBJ_DIR)/src/Genes
 	mkdir -p $(RELEASE_OBJ_DIR)/src/Exceptions
 	mkdir -p $(RELEASE_OBJ_DIR)/src/Game
+	mkdir -p $(RELEASE_OBJ_DIR)/src/Moves
 	mkdir -p $(RELEASE_OBJ_DIR)/src/Players
 	mkdir -p $(RELEASE_OBJ_DIR)/src/Pieces
-	mkdir -p $(RELEASE_OBJ_DIR)/src/Moves
-	mkdir -p $(RELEASE_OBJ_DIR)/src/Genes
 
 clean : clean_release clean_debug clean_optimized_debug
 
