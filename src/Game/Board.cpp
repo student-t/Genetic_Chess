@@ -274,7 +274,7 @@ size_t Board::board_index(char file, int rank)
     // Square A8 = Board::board[56]
     // Square H8 = Board::board[63]
     assert(inside_board(file, rank));
-    return (file - 'a') + 8*(rank - 1);
+    return 8*(file - 'a') + (rank - 1);
 }
 
 uint64_t Board::board_bit(char file, int rank)
@@ -817,9 +817,10 @@ std::array<bool, 64> Board::all_square_indices_attacked_by(Color player) const
             auto piece = piece_on_square(file, rank);
             if(piece && piece->color() == player)
             {
-                for(auto square : piece->all_attacked_squares(file, rank, *this))
+                auto attacked_squares = piece->all_attacked_squares(file, rank, *this);
+                for(size_t i = 0; i < attacked_squares.size(); ++i)
                 {
-                    attacked_indices[board_index(square.file, square.rank)] = true;
+                    attacked_indices[i] = attacked_indices[i] || attacked_squares[i];
                 }
             }
         }
